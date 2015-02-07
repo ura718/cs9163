@@ -22,16 +22,31 @@ def main():
   parser.add_argument('-p', dest='p', help='provide password')
   args=parser.parse_args()  
 
-  #print 'username  =', args.u
-  #print 'password  =', args.p
 
   # OPTIONS 
+  ''' setting flag to coordinate and see if encryption was selected '''
+
+  flag = False
   if args.ecb:
     c_ecb = args.ecb
+    flag = True
   if args.ctr:
     c_ctr = args.ctr
+    flag = True
   if args.cbc:
     c_cbc = args.cbc
+    flag = True
+
+
+
+  if flag == False:
+    print "[-] encryption required"
+    sys.exit(0)
+  elif flag == True:
+    print "[+] encryption provided"
+
+
+   
 
   if args.u == None:
     print "[-] username required "
