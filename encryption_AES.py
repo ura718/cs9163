@@ -9,17 +9,17 @@ from Crypto import Random
 ''' Here we randomize initialization vector (iv) and append it to key '''
 
 def RANDOM_ENCRYPTION():
-  key = b'Sixteen byte key'
+  key = b'Sixteen byte key'		# secret key
   iv = Random.new().read(AES.block_size)
 
   # Encrypt
-  encryption_suite = AES.new(key, AES.MODE_CFB, iv)
-  cipher_text = iv + encryption_suite.encrypt(b'Attack at dawn')
+  encryption_suite = AES.new(key, AES.MODE_CBC, iv)
+  cipher_text = iv + encryption_suite.encrypt(b'Attack at dawn!!')
   print cipher_text
 
 
   # Decrypt
-  encryption_suite = AES.new(key, AES.MODE_CFB, iv)
+  encryption_suite = AES.new(key, AES.MODE_CBC, iv)
   plain_text = iv + encryption_suite.decrypt(cipher_text)
   print plain_text
 
