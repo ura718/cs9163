@@ -4,7 +4,7 @@
 # static key
 key=b'12345678abcdefgh'
 
-# 
+# 0x00 is a null byte you can use to add padding
 
 # Input from terminal
 msg=raw_input()
@@ -13,6 +13,7 @@ padding=len(msg)
 
 counter=0
 
+
 while True:
   if len(msg) == 0:
     print "message is empty"
@@ -20,9 +21,15 @@ while True:
   elif padding % 16 != 0:
     counter = counter + 1
     padding = len(msg) + counter   
+    numofzero = counter
     print "%s + %s " % (len(msg),counter)
   elif padding % 16 == 0:
     break
 
 # print message
 print 'msg: %s + padding: %s' % (len(msg), counter)
+
+# number of null characters to be added to msg
+print 'msg: \"%s\"' % (str(msg) + (' ' * numofzero))
+
+
