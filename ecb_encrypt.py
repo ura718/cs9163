@@ -11,36 +11,31 @@ import binascii
 def ECB(text):
     key = b'Sixteen byte key'		# secret key
 
-    #text='1234567812345678ABCDEFGHIJKLMNOP'
-
     # Encrypt
     encrypt_mode = AES.new(key, AES.MODE_ECB)
     cipher_text = encrypt_mode.encrypt(text)
-    cipher_text = cipher_text.encode('hex')	# convert cipher into hex
-    print cipher_text
-    #print cipher_text.encode('hex')
+
+    ''' Convert cipher into hex. You need this so it looks like one line '''
+    cipher_text = cipher_text.encode('hex')
+    print "ENCRYPT: %s " % cipher_text
 
 
     # Decrypt
     cipher_text = binascii.unhexlify(cipher_text)  # convert hex back to cipher
     encrypt_mode = AES.new(key, AES.MODE_ECB)
     plain_text = encrypt_mode.decrypt(cipher_text)
-    print plain_text
+    print "DECRYPT: %s " % plain_text
 
 
 
 
 
 
-def PADDING():
-
-    # Input from terminal
-    msg=raw_input()
-
+def PADDING(msg):
     # assign length of message to padding (e.g int() )
     padding=len(msg)
 
-    # set counter to zero
+    # set counter to zero; nullify numofzero
     counter=0
     numofzero=[]
 
@@ -52,23 +47,28 @@ def PADDING():
         counter = counter + 1
         padding = len(msg) + counter
         numofzero = counter
-        #print "%s + %s " % (len(msg),counter)
       elif padding % 16 == 0:		# divides evenly into 16. Padding is not required
         break
 
 
 
-    # number of null characters to be added to msg
-    #print 'msg: \"%s\"' % (str(msg) + (' ' * numofzero))
-
 
     try:
       if numofzero: 
+	  # concatenate msg + \x00 * numofzero to variable %s if padding is required
           ECB('%s' % (str(msg) + ('\x00' * numofzero)))
       else:
+          # padding of zeros is not required so no concatenation is needed
           ECB('%s' % (str(msg)))
     except UnboundLocalError, e:
         raise
 
 
-PADDING()
+
+
+
+
+# Input from terminal
+msg=raw_input()
+
+PADDING(msg)
