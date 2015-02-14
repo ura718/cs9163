@@ -4,15 +4,12 @@
 # static key
 key=b'12345678abcdefgh'
 
-# 0x00 is a null byte you can use to add padding
-
 # Input from terminal
 msg=raw_input()
 
 padding=len(msg)
 
 counter=0
-
 
 while True:
   if len(msg) == 0:
