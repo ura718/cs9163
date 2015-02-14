@@ -86,33 +86,49 @@ def DB(username, password):
 
 
 
+def ECB_ENCRYPT(key,plaintext):
+    # Encrypt
+    encrypt_mode = AES.new(key, AES.MODE_ECB)
+    cipher_text = encrypt_mode.encrypt(plaintext) 
+
+    ''' Convert cipher into hex. You need this so it looks like one line '''
+    cipher_text = cipher_text.encode('hex')
+    return cipher_text
+
+
+
+
+
+def ECB_DECRYPT(key,cipher_text):
+    # Decrypt
+    cipher_text = binascii.unhexlify(cipher_text)  # convert hex back to cipher
+    encrypt_mode = AES.new(key, AES.MODE_ECB)
+    plain_text = encrypt_mode.decrypt(cipher_text)
+    return plain_text
+    #print "DECRYPT: %s " % plain_text
 
 
 
 
 
 def ECB(username, password):
+    # secret key 
+    key = b'Sixteen byte key'
+
     print "ECB selected: %s:%s" % (username,password)
+    username = PADDING(username)
     password = PADDING(password)
 
-
-    key = b'Sixteen byte key'		# secret key
-
-    # Encrypt
-    encrypt_mode = AES.new(key, AES.MODE_ECB)
-    cipher_text = encrypt_mode.encrypt(password)
-
-    ''' Convert cipher into hex. You need this so it looks like one line '''
-    cipher_text = cipher_text.encode('hex')
-    print "ENCRYPT: %s " % cipher_text
+    # Encrypt plaintext username and password
+    e_username = ECB_ENCRYPT(key,username)
+    e_password = ECB_ENCRYPT(key,password)
+    print "%s:%s" % (e_username,e_password)
 
 
-    # Decrypt
-    cipher_text = binascii.unhexlify(cipher_text)  # convert hex back to cipher
-    encrypt_mode = AES.new(key, AES.MODE_ECB)
-    plain_text = encrypt_mode.decrypt(cipher_text)
-    print "DECRYPT: %s " % plain_text
-
+    # Decrypt username and password
+    d_username = ECB_DECRYPT(key,e_username)
+    d_password = ECB_DECRYPT(key,e_password)
+    print "%s:%s" % (d_username,d_password)
 
     #DB(username, password) 
 
