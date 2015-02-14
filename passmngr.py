@@ -36,11 +36,11 @@ def PADDING(password):
       if len(password) == 0:
         print "message is empty"
         break
-      elif padding % 16 != 0:		# if doesnt divide by 16 evenly. Padding required
+      elif padding % 16 != 0:		# If doesnt divide by 16 evenly. Padding required
         counter = counter + 1
         padding = len(password) + counter
         numofzero = counter
-      elif padding % 16 == 0:		# divides evenly into 16. Padding is not required
+      elif padding % 16 == 0:		# Divides evenly into 16. Padding is not required
         break
 
 
@@ -49,11 +49,9 @@ def PADDING(password):
     try:
       if numofzero: 
 	  # concatenate msg + \x00 * numofzero to variable %s if padding is required
-          #ECB('%s' % (str(msg) + ('\x00' * numofzero)))
           return('%s' % (str(password) + ('\x00' * numofzero)))
       else:
           # padding of zeros is not required so no concatenation is needed
-          #ECB('%s' % (str(msg)))
           return('%s' % (str(password)))
     except UnboundLocalError, e:
         raise
@@ -68,19 +66,23 @@ def PADDING(password):
 
 
 
-def DB(username, password):
+def DB(index, e_username, e_password):
 
     # Verify if credentials already exists in file before writing
-    CHKDUP(username, password) 
+    #CHKDUP(username, password) 
 
     print "Write credentials to db file"
   
-
+    
     # open file for writing even if file does not exist
     cred = open('dbpass', 'a')
-    cred.write(("%s:%s") % (username, password))
+    cred.write(("%s:%s:%s") % (index,e_username, e_password))
     cred.write("\n")
     cred.close()
+
+
+
+
 
 
 
@@ -105,11 +107,14 @@ def ECB_DECRYPT(key,cipher_text):
     encrypt_mode = AES.new(key, AES.MODE_ECB)
     plain_text = encrypt_mode.decrypt(cipher_text)
     return plain_text
-    #print "DECRYPT: %s " % plain_text
 
 
 
 
+
+
+
+''' Main ECB function that starts up Encryption and Decryption mechanisms '''
 
 def ECB(username, password):
     # secret key 
@@ -124,13 +129,15 @@ def ECB(username, password):
     e_password = ECB_ENCRYPT(key,password)
     print "%s:%s" % (e_username,e_password)
 
+    index='ecb'
+    DB(index, e_username, e_password) 
+
 
     # Decrypt username and password
-    d_username = ECB_DECRYPT(key,e_username)
-    d_password = ECB_DECRYPT(key,e_password)
-    print "%s:%s" % (d_username,d_password)
+    username = ECB_DECRYPT(key,e_username)
+    password = ECB_DECRYPT(key,e_password)
+    print "%s:%s" % (username,password)
 
-    #DB(username, password) 
 
 
 
