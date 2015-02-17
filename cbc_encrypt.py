@@ -2,55 +2,50 @@
 
 from Crypto.Cipher import AES
 from Crypto import Random
+import base64
 
 
 
 
 ''' Here we randomize initialization vector (iv) and append it to key '''
 
-def RANDOM_ENCRYPTION():
-  key = b'Sixteen byte key'		# secret key
-  iv = Random.new().read(AES.block_size)
 
+def padding(msg):
+  return msg + (((16-len(msg) % 16)) * '\x00')
+  #return msg + ((16-len(msg) % 16) * '{')
+
+
+def unpad(msg):
+  return msg.rstrip(b'\x00')
+  #return msg.rstrip(b'{')
+
+
+
+def CBC():
+  block_size=16
+
+  # secret key
+  key = b'Sixteen byte key'		
+  
+  # input message
+  msg='Attack at dawn'
+
+  
   # Encrypt
+  iv = Random.new().read(AES.block_size)
   encrypt_mode = AES.new(key, AES.MODE_CBC, iv)
-  cipher_text = iv + encrypt_mode.encrypt(b'Attack at dawn!!')
+  cipher_text = base64.b64encode(iv + encrypt_mode.encrypt((padding(msg))))
   print cipher_text
 
 
   # Decrypt
+  cipher_text = base64.b64decode(cipher_text)
+  iv = cipher_text[:AES.block_size]
   encrypt_mode = AES.new(key, AES.MODE_CBC, iv)
-  plain_text = iv + encrypt_mode.decrypt(cipher_text)
+
+  plain_text = unpad(encrypt_mode.decrypt(cipher_text[AES.block_size:]))
   print plain_text
 
 
 
-
-
-
-''' Here the initialization vector (iv) is static and append it to key '''
-
-def STATIC_ENCRYPTION():
-
-  # key = b'Sixteen byte key'
-  # iv = 'This is an IV456'
-
-
-  ''' Encryption - cipher_text must be of 16 byte multiple (e.g: 16, 32, 48...etc) '''
-  encrypt_mode = AES.new('Sixteen byte key', AES.MODE_CBC, 'This is an IV456')
-  cipher_text = encrypt_mode.encrypt("A really secret message... Not for prying eyes!!")
-  print cipher_text
-
-  # Decryption
-  encrypt_mode = AES.new('Sixteen byte key', AES.MODE_CBC, 'This is an IV456')
-  plain_text = encrypt_mode.decrypt(cipher_text)
-  print plain_text
-
-
-
-
-
-RANDOM_ENCRYPTION()
-#STATIC_ENCRYPTION()
-
-
+CBC()
