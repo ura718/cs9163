@@ -3,6 +3,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 import binascii
+import base64
 import argparse
 import sys
 import os
@@ -13,54 +14,43 @@ import os
 
 ''' This function checks for duplicate entries in dbpass file '''
 
-def CHKDUP(username, password):
+def CHKDUP(index, e_username, e_password):
     try:
       if os.path.exists('./dbpass'):
         print "check for duplicates entries. STILL NEEDS WORK!!!"
-    except OSerror, e:
-      pass
+    	file = open('dbpass', 'r')
+
+ 	for line in file:
+            index_line, user_line, pass_line = line.split(':')
+
+ 	    if index_line == index:
+	        print index_line
+    		username = ECB_DECRYPT(e_username)
+    		password = ECB_DECRYPT(e_password)
+
+ 	    elif index_line == 'cbc':
+                print index_line 
+ 	    elif index_line == 'ctr':
+                print index_line 
+    	file.close()
+
+    except:
+      raise
   
     
 
 
 
-def PADDING(password):
-    # assign length of password to padding (e.g int() )
-    padding=len(password)
 
-    # set counter to zero; nullify numofzero
-    counter=0
-    numofzero=[]
-
-    while True:
-      if len(password) == 0:
-        print "message is empty"
-        break
-      elif padding % 16 != 0:		# If doesnt divide by 16 evenly. Padding required
-        counter = counter + 1
-        padding = len(password) + counter
-        numofzero = counter
-      elif padding % 16 == 0:		# Divides evenly into 16. Padding is not required
-        break
-
-
-
-
-    try:
-      if numofzero: 
-	  # concatenate msg + \x00 * numofzero to variable %s if padding is required
-          return('%s' % (str(password) + ('\x00' * numofzero)))
-      else:
-          # padding of zeros is not required so no concatenation is needed
-          return('%s' % (str(password)))
-    except UnboundLocalError, e:
-        raise
+def PADDING(msg):
+  return msg + (((16-len(msg) % 16)) * '\x00')
 
 
 
 
 
-
+def UNPAD(msg):
+  return msg.rstrip(b'\x00')
 
 
 
@@ -69,7 +59,7 @@ def PADDING(password):
 def DB(index, e_username, e_password):
 
     # Verify if credentials already exists in file before writing
-    #CHKDUP(username, password) 
+    #CHKDUP(index, e_username, e_password) 
 
     print "Write credentials to db file"
   
@@ -86,9 +76,12 @@ def DB(index, e_username, e_password):
 
 
 
+###################################################################################
 
+def ECB_ENCRYPT(plaintext):
+    # secret key 
+    key = b'Sixteen byte key'
 
-def ECB_ENCRYPT(key,plaintext):
     # Encrypt
     encrypt_mode = AES.new(key, AES.MODE_ECB)
     cipher_text = encrypt_mode.encrypt(plaintext) 
@@ -101,13 +94,53 @@ def ECB_ENCRYPT(key,plaintext):
 
 
 
-def ECB_DECRYPT(key,cipher_text):
+def ECB_DECRYPT(cipher_text):
+    # secret key 
+    key = b'Sixteen byte key'
+
     # Decrypt
     cipher_text = binascii.unhexlify(cipher_text)  # convert hex back to cipher
     encrypt_mode = AES.new(key, AES.MODE_ECB)
     plain_text = encrypt_mode.decrypt(cipher_text)
     return plain_text
 
+
+
+###################################################################################
+
+
+
+def CBC_ENCRYPT(iv, plaintext):
+    block_size = 16
+
+    # secret key 
+    key = b'Sixteen byte key'
+
+
+    # Encrypt
+    encrypt_mode = AES.new(key, AES.MODE_CBC, iv)
+    cipher_text = base64.b64encode(iv + encrypt_mode.encrypt((PADDING(plaintext))))
+    print cipher_text
+    return cipher_text
+
+
+
+
+def CBC_DECRYPT(iv, cipher_text):
+    block_size = 16
+
+    # secret key 
+    key = b'Sixteen byte key'
+
+
+    # Decrypt
+    cipher_text = base64.b64decode(cipher_text)
+    iv = cipher_text[:AES.block_size]
+    encrypt_mode = AES.new(key, AES.MODE_CBC, iv)
+    plain_text = UNPAD(encrypt_mode.decrypt(cipher_text[AES.block_size:]))
+    return plain_text
+
+###################################################################################
 
 
 
@@ -117,16 +150,13 @@ def ECB_DECRYPT(key,cipher_text):
 ''' Main ECB function that starts up Encryption and Decryption mechanisms '''
 
 def ECB(username, password):
-    # secret key 
-    key = b'Sixteen byte key'
-
     print "ECB selected: %s:%s" % (username,password)
     username = PADDING(username)
     password = PADDING(password)
 
     # Encrypt plaintext username and password
-    e_username = ECB_ENCRYPT(key,username)
-    e_password = ECB_ENCRYPT(key,password)
+    e_username = ECB_ENCRYPT(username)
+    e_password = ECB_ENCRYPT(password)
     print "%s:%s" % (e_username,e_password)
 
     index='ecb'
@@ -134,9 +164,11 @@ def ECB(username, password):
 
 
     # Decrypt username and password
-    username = ECB_DECRYPT(key,e_username)
-    password = ECB_DECRYPT(key,e_password)
+    username = ECB_DECRYPT(e_username)
+    password = ECB_DECRYPT(e_password)
     print "%s:%s" % (username,password)
+
+
 
 
 
@@ -147,9 +179,30 @@ def CTR(username, password):
 
 
 
+
+
 def CBC(username, password):
     print "CBC selected: %s:%s" % (username,password)
-    DB(username, password)
+    username = PADDING(username)
+    password = PADDING(password)
+
+    # Encrypt plaintext username and password
+    iv = os.urandom(16)
+    e_username = CBC_ENCRYPT(iv, username)
+    e_password = CBC_ENCRYPT(iv, password)
+    print "%s:%s" % (e_username,e_password)
+
+
+    index='cbc'
+    DB(index, e_username, e_password) 
+
+
+    # Decrypt username and password
+    username = CBC_DECRYPT(iv, e_username)
+    password = CBC_DECRYPT(iv, e_password)
+    print "%s:%s" % (username,password)
+
+
 
 
 
