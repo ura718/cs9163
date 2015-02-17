@@ -71,7 +71,7 @@ def DB(index, e_username, e_password):
     # Verify if credentials already exists in file before writing
     #CHKDUP(index, e_username, e_password) 
 
-    print "Write credentials to db file"
+    print "Wrote credentials to db file"
   
     
     # open file for writing even if file does not exist
@@ -157,8 +157,7 @@ def CBC_DECRYPT(iv, cipher_text):
 
 
 
-def CTR_ENCRYPT(plaintext):
-    nonce = Random.new().read(8)
+def CTR_ENCRYPT(nonce, plaintext):
 
     # secret key
     key = b'Sixteen byte key'
@@ -172,8 +171,7 @@ def CTR_ENCRYPT(plaintext):
 
 
 
-def CTR_DECRYPT(cipher_text):
-    nonce = Random.new().read(8)
+def CTR_DECRYPT(nonce, cipher_text):
 
     # secret key
     key = b'Sixteen byte key'
@@ -221,9 +219,11 @@ def ECB(username, password):
 def CTR(username, password):
     print "CTR selected: %s:%s" % (username,password)
 
+    nonce = Random.new().read(8)
+
     # Encrypt plaintext username and password
-    e_username = CTR_ENCRYPT(username)
-    e_password = CTR_ENCRYPT(password)
+    e_username = CTR_ENCRYPT(nonce, username)
+    e_password = CTR_ENCRYPT(nonce, password)
     print "%s:%s" % (e_username,e_password)
 
 
@@ -231,8 +231,8 @@ def CTR(username, password):
     DB(index, e_username, e_password)
 
     # Decrypt username and password
-    username = CTR_DECRYPT(e_username)
-    password = CTR_DECRYPT(e_password)
+    username = CTR_DECRYPT(nonce, e_username)
+    password = CTR_DECRYPT(nonce, e_password)
     print "%s:%s" % (username,password)
 
 
