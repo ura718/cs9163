@@ -1,5 +1,15 @@
 #!/usr/bin/python
 
+#
+# Author: Yuri Medvinsky
+# Date: 02.17.2015
+# class: cs9163
+# Password Manager: Write three encryptions CTR, CBC and ECB for user input to store username and password 
+#
+
+
+
+
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Util import Counter
@@ -45,7 +55,6 @@ def CHKDUP(index, e_username, e_password):
 
 def PADDING(msg):
   return msg + (((16-len(msg) % 16)) * '\x00')
-
 
 
 
