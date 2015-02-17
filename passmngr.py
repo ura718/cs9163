@@ -2,6 +2,7 @@
 
 from Crypto.Cipher import AES
 from Crypto import Random
+from Crypto.Util import Counter
 import binascii
 import base64
 import argparse
@@ -140,9 +141,44 @@ def CBC_DECRYPT(iv, cipher_text):
     plain_text = UNPAD(encrypt_mode.decrypt(cipher_text[AES.block_size:]))
     return plain_text
 
+
+
 ###################################################################################
 
 
+
+
+def CTR_ENCRYPT(plaintext):
+    nonce = Random.new().read(8)
+
+    # secret key
+    key = b'Sixteen byte key'
+
+    # Encrypt
+    # Create encryptor, ask for plaintext to encrypt, then encrypt and print ciphertext
+    encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
+    cipher_text = base64.b64encode(encrypt_mode.encrypt(plaintext))
+    return cipher_text
+
+
+
+
+def CTR_DECRYPT(cipher_text):
+    nonce = Random.new().read(8)
+
+    # secret key
+    key = b'Sixteen byte key'
+
+    # Decryption
+    # Create decryptor, then decrypt and print plain text
+    encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
+    plain_text = encrypt_mode.decrypt(base64.b64decode(cipher_text))
+    return plain_text
+
+
+
+
+###################################################################################
 
 
 
@@ -175,7 +211,21 @@ def ECB(username, password):
 
 def CTR(username, password):
     print "CTR selected: %s:%s" % (username,password)
-    DB(username, password)
+
+    # Encrypt plaintext username and password
+    e_username = CTR_ENCRYPT(username)
+    e_password = CTR_ENCRYPT(password)
+    print "%s:%s" % (e_username,e_password)
+
+
+    index='ctr'
+    DB(index, e_username, e_password)
+
+    # Decrypt username and password
+    username = CTR_DECRYPT(e_username)
+    password = CTR_DECRYPT(e_password)
+    print "%s:%s" % (username,password)
+
 
 
 
