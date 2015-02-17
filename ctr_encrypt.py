@@ -8,43 +8,33 @@ from Crypto.Util import Counter
 import base64
 
 
-# Pad for short keys
-pad = '# constant pad for short keys ##'
-
-iv = Random.new().read(8)
-key = 'this is a 32 bit long message!!!'
-
-plaintext = 'this is my secret message'
 
 
+def CTR():
+  nonce = Random.new().read(8)
 
+  key = b'Sixteen byte key'
 
-
-# Encrypt
-# counter for encryptor
-ctr_e = Counter.new(64, prefix=iv)
-
-
-# Create encryptor, ask for plaintext to encrypt, then encrypt and print ciphertext
-encryptor = AES.new(key, AES.MODE_CTR, counter=ctr_e)
-ciphertext = encryptor.encrypt(plaintext)
-print ciphertext
+  msg = 'Attack at dawn'
 
 
 
 
+  # Encrypt
 
-
-# Decryption
-# counter for decryption
-ctr_d = Counter.new(64, prefix=iv)
-
-
-# Create decryptor, then decrypt and print decoded text
-decryptor = AES.new(key, AES.MODE_CTR, counter=ctr_d)
-decoded_text = decryptor.decrypt(ciphertext)
-print decoded_text
+  # Create encryptor, ask for plaintext to encrypt, then encrypt and print ciphertext
+  encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
+  cipher_text = base64.b64encode(encrypt_mode.encrypt(msg))
+  print cipher_text
 
 
 
 
+  # Decryption
+  # Create decryptor, then decrypt and print plain text
+  encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
+  plain_text = encrypt_mode.decrypt(base64.b64decode(cipher_text))
+  print plain_text
+
+
+CTR()
