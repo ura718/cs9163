@@ -71,11 +71,16 @@ def ECB_CHKDUP(index, e_username, e_password, username, password):
       pass
 
 
+
     
 
     try: 
+	# Counter will count to 0. If no entries are found then add new entries to dbpass file
+        counter=len(file)
+
         for line in file:
-            #index_line, e_username, e_password = line.split(':')
+            counter = counter - 1
+
             index_line = line.split(':')[0]
 
  	    if index_line == 'ecb' and index == 'ecb':
@@ -97,6 +102,11 @@ def ECB_CHKDUP(index, e_username, e_password, username, password):
             elif index_line == ' ':
                 print "writing to db file - ecb : %s:%s " % (username, password) 
     	        ECB_COMMIT(index, e_username, e_password) 
+
+            elif counter == 0:
+                print "writing to db file - ecb : %s:%s " % (username, password) 
+    	        ECB_COMMIT(index, e_username, e_password) 
+            
 
                 
     except UnboundLocalError, e:
@@ -168,19 +178,6 @@ def ECB_DECRYPT(cipher_text):
 
 
 
-#####################################################################
-
-
-
-
-
-		
-
-
-
- 
-
-
 
 
 
@@ -221,7 +218,7 @@ def CBC(username, password):
 def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
     print "check for duplicates entries."
 
-    # put file dbpass content into array "file" 
+    # put file dbpass content into array "file" ; otherwise write to dbpass as new file
     try:
         if os.path.exists('./dbpass'):
             file = []
@@ -237,8 +234,16 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
 
 
     try:
+	# Counter will count to 0. If no entries are found then add new entries to dbpass file
+        counter=len(file)
+
         for line in file:
+            counter = counter - 1
+
             index_line = line.split(':')[0]
+
+	    # ym
+            print "%s:%s" % (index_line, index)
 
             if index_line == 'cbc' and index == 'cbc':
                 index_line, e_username, e_password, iv = line.split(':')
@@ -246,6 +251,7 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
                 f_username = UNPAD(CBC_DECRYPT(iv, e_username))	# username decrypted from file, then unpad
                 f_password = UNPAD(CBC_DECRYPT(iv, e_password))	# password decrypted from file, then unpad
               
+
 
                 if f_username:
                     if f_username == username and f_password == password:
@@ -256,6 +262,10 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
     	                CBC_COMMIT(index, e_username, e_password, iv) 
 
             elif index_line == ' ':
+                print "writing to db file + cbc : %s:%s " % (username, password) 
+    	        CBC_COMMIT(index, e_username, e_password, iv) 
+
+            elif counter == 0:
                 print "writing to db file + cbc : %s:%s " % (username, password) 
     	        CBC_COMMIT(index, e_username, e_password, iv) 
                 
@@ -377,7 +387,12 @@ def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
 
 
     try:
+	# Counter will count to 0. If no entries are found then add new entries to dbpass file
+        counter=len(file)
+
         for line in file:
+            counter = counter - 1
+
             index_line = line.split(':')[0]
 
             if index_line == 'ctr' and index == 'ctr':
@@ -394,6 +409,10 @@ def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
                         CTR_COMMIT(index, e_username, e_password, nonce) 
 
             elif index_line == ' ':
+                print "writing to db file + ctr : %s:%s " % (username, password) 
+    	        CTR_COMMIT(index, e_username, e_password, nonce) 
+
+            elif counter == 0:
                 print "writing to db file + ctr : %s:%s " % (username, password) 
     	        CTR_COMMIT(index, e_username, e_password, nonce) 
                 
