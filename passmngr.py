@@ -82,35 +82,51 @@ def ECB_CHKDUP(index, e_username, e_password, username, password):
             counter = counter - 1
 
             index_line = line.split(':')[0]
+   
 
  	    if index_line == 'ecb' and index == 'ecb':
 
-                index_line, e_username, e_password = line.split(':')
+                index_line, fe_username, fe_password = line.split(':')
 
-    	        f_username = UNPAD(ECB_DECRYPT(e_username))	# username decrypted from file, then unpad
-    	        f_password = UNPAD(ECB_DECRYPT(e_password))	# password decrypted from file, then unpad
+
+    	        f_username = UNPAD(ECB_DECRYPT(fe_username))	# username decrypted from file, then unpad
+    	        f_password = UNPAD(ECB_DECRYPT(fe_password))	# password decrypted from file, then unpad
+
+                # flag=ym
+                #print "f_username: %s, f_password: %s, username: %s, password: %s" % (f_username, f_password, username, password)
 	
 	        # Check if username exists in a file, if it does then compare credentials from file with current input	
-                if f_username:
-	            if f_username == username and f_password == password:
-                        print "credentials already exist in database."
-                        sys.exit(0)
-                    else:
-                        print "writing to db file - ecb : %s:%s " % (username, password) 
-    	                ECB_COMMIT(index, e_username, e_password) 
+	        if f_username == username and f_password == password:
+                    print "credentials already exist in database."
+                    sys.exit(0)
 
-            elif index_line == ' ':
+                elif f_username != username and f_password != password and counter == 0:
+                    print "writing to db file - ecb : %s:%s " % (username, password) 
+    	            ECB_COMMIT(index, e_username, e_password) 
+
+                elif f_username != username and f_password == password and counter == 0:
+                    print "writing to db file - ecb : %s:%s " % (username, password) 
+    	            ECB_COMMIT(index, e_username, e_password) 
+
+                elif f_username == username and f_password != password and counter == 0:
+                    print "writing to db file - ecb : %s:%s " % (username, password) 
+    	            ECB_COMMIT(index, e_username, e_password) 
+
+
+	    
+            if index_line is None and counter == 0:
                 print "writing to db file - ecb : %s:%s " % (username, password) 
     	        ECB_COMMIT(index, e_username, e_password) 
 
-            elif counter == 0:
+
+            if index_line != index and counter == 0:
                 print "writing to db file - ecb : %s:%s " % (username, password) 
     	        ECB_COMMIT(index, e_username, e_password) 
             
 
                 
     except UnboundLocalError, e:
-        pass 
+        raise
 
 
 
@@ -242,8 +258,6 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
 
             index_line = line.split(':')[0]
 
-	    # ym
-            print "%s:%s" % (index_line, index)
 
             if index_line == 'cbc' and index == 'cbc':
                 index_line, e_username, e_password, iv = line.split(':')
