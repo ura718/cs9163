@@ -20,73 +20,119 @@ import sys
 import os
 
 
+#####################################################################
+#
+# 		ECB  -  ENCRYPTION
+#
+#####################################################################
+
+def ECB(username, password):
+    index='ecb'
+
+
+    print "ECB selected: %s:%s" % (username,password)
+    padded_username = PADDING(username)
+    padded_password = PADDING(password)
+
+    # Encrypt plaintext username and password
+    e_username = ECB_ENCRYPT(padded_username)
+    e_password = ECB_ENCRYPT(padded_password)
+    print "%s:%s" % (e_username,e_password)
+
+    # Verify if credentials already exists in file before writing. 
+    ECB_CHKDUP(index, e_username, e_password, username, password) 
 
 
 
-''' This function checks for duplicate entries in dbpass file '''
 
-def CHKDUP(index, e_username, e_password):
+
+'''
+
+Do duplicate entries exist?...
+
+'''
+
+
+
+
+def ECB_CHKDUP(index, e_username, e_password, username, password):
+    print "check for duplicates entries."
+
+    # put file dbpass content into array "file" 
     try:
-      if os.path.exists('./dbpass'):
-        print "check for duplicates entries. STILL NEEDS WORK!!!"
-    	file = open('dbpass', 'r')
-
- 	for line in file:
-            index_line, user_line, pass_line = line.split(':')
-
- 	    if index_line == index:
-	        print index_line
-    		username = ECB_DECRYPT(e_username)
-    		password = ECB_DECRYPT(e_password)
-
- 	    elif index_line == 'cbc':
-                print index_line 
- 	    elif index_line == 'ctr':
-                print index_line 
-    	file.close()
-
+        if os.path.exists('./dbpass'):
+            file = []
+            for f_lines in open('./dbpass','r').readlines():
+                f_lines = f_lines.strip('\n')
+                file.append(f_lines)
+        else:
+    	    ECB_COMMIT(index, e_username, e_password) 
     except:
-      raise
-  
+      pass
+
+
     
 
+    try: 
+        for line in file:
+            #index_line, e_username, e_password = line.split(':')
+            index_line = line.split(':')[0]
+
+ 	    if index_line == 'ecb' and index == 'ecb':
+
+                index_line, e_username, e_password = line.split(':')
+
+    	        f_username = UNPAD(ECB_DECRYPT(e_username))	# username decrypted from file, then unpad
+    	        f_password = UNPAD(ECB_DECRYPT(e_password))	# password decrypted from file, then unpad
+	
+	        # Check if username exists in a file, if it does then compare credentials from file with current input	
+                if f_username:
+	            if f_username == username and f_password == password:
+                        print "credentials already exist in database."
+                        sys.exit(0)
+                    else:
+                        print "writing to db file - ecb : %s:%s " % (username, password) 
+    	                ECB_COMMIT(index, e_username, e_password) 
+
+            elif index_line == ' ':
+                print "writing to db file - ecb : %s:%s " % (username, password) 
+    	        ECB_COMMIT(index, e_username, e_password) 
+
+                
+    except UnboundLocalError, e:
+        pass 
 
 
 
-def PADDING(msg):
-  return msg + (((16-len(msg) % 16)) * '\x00')
+
+'''
+
+Now lets write encrypted credentials into dbpass file
+
+'''
 
 
 
-
-def UNPAD(msg):
-  return msg.rstrip(b'\x00')
-
-
-
-
-
-def DB(index, e_username, e_password):
-
-    # Verify if credentials already exists in file before writing
-    #CHKDUP(index, e_username, e_password) 
+def ECB_COMMIT(index, e_username, e_password):
 
     print "Wrote credentials to db file"
   
     
     # open file for writing even if file does not exist
     cred = open('dbpass', 'a')
-    cred.write(("%s:%s:%s") % (index,e_username, e_password))
+    cred.write(("%s:%s:%s") % (index, e_username, e_password))
     cred.write("\n")
     cred.close()
 
 
 
+'''
+
+Encrypt ECB plaintext
+
+'''
 
 
-
-
-###################################################################################
 
 def ECB_ENCRYPT(plaintext):
     # secret key 
@@ -102,6 +148,11 @@ def ECB_ENCRYPT(plaintext):
 
 
 
+'''
+
+Decrypt ECB cipher_text 
+
+'''
 
 
 def ECB_DECRYPT(cipher_text):
@@ -116,7 +167,124 @@ def ECB_DECRYPT(cipher_text):
 
 
 
-###################################################################################
+
+#####################################################################
+
+
+
+
+
+		
+
+
+
+ 
+
+
+
+
+
+
+
+
+#####################################################################
+#
+# 		CBC  -  ENCRYPTION
+#
+#####################################################################
+
+def CBC(username, password):
+    index='cbc'
+
+    print "CBC selected: %s:%s" % (username,password)
+    #username = PADDING(username)
+    #password = PADDING(password)
+
+    # Encrypt plaintext username and password
+    iv = os.urandom(16)
+    e_username = CBC_ENCRYPT(iv, PADDING(username))
+    e_password = CBC_ENCRYPT(iv, PADDING(password))
+    print "%s:%s" % (e_username, e_password)
+
+
+    # Verify if credentials already exists in file before writing
+    CBC_CHKDUP(index, e_username, e_password, username, password, iv) 
+
+
+
+
+
+
+
+
+
+def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
+    print "check for duplicates entries."
+
+    # put file dbpass content into array "file" 
+    try:
+        if os.path.exists('./dbpass'):
+            file = []
+            for f_lines in open('./dbpass','r').readlines():
+                f_lines = f_lines.strip('\n')
+                file.append(f_lines)
+        else:
+    	    CBC_COMMIT(index, e_username, e_password, iv) 
+    except:
+      pass
+
+
+
+
+    try:
+        for line in file:
+            index_line = line.split(':')[0]
+
+            if index_line == 'cbc' and index == 'cbc':
+                index_line, e_username, e_password, iv = line.split(':')
+
+                f_username = UNPAD(CBC_DECRYPT(iv, e_username))	# username decrypted from file, then unpad
+                f_password = UNPAD(CBC_DECRYPT(iv, e_password))	# password decrypted from file, then unpad
+              
+
+                if f_username:
+                    if f_username == username and f_password == password:
+                        print "credentials already exist in database."
+                        sys.exit(0)
+                    else:
+                        print "writing to db file - cbc : %s:%s " % (username, password) 
+    	                CBC_COMMIT(index, e_username, e_password, iv) 
+
+            elif index_line == ' ':
+                print "writing to db file + cbc : %s:%s " % (username, password) 
+    	        CBC_COMMIT(index, e_username, e_password, iv) 
+                
+    except UnboundLocalError, e:
+        pass
+
+
+
+
+
+
+
+
+
+
+def CBC_COMMIT(index, e_username, e_password, iv):
+
+    print "Wrote credentials to db file"
+  
+    
+    # open file for writing even if file does not exist
+    cred = open('dbpass', 'a')
+    cred.write(("%s:%s:%s:%s") % (index, e_username, e_password, iv))
+    cred.write("\n")
+    cred.close()
+
+
+
+
 
 
 
@@ -130,8 +298,11 @@ def CBC_ENCRYPT(iv, plaintext):
     # Encrypt
     encrypt_mode = AES.new(key, AES.MODE_CBC, iv)
     cipher_text = base64.b64encode(iv + encrypt_mode.encrypt((PADDING(plaintext))))
-    print cipher_text
     return cipher_text
+
+
+
+
 
 
 
@@ -142,7 +313,7 @@ def CBC_DECRYPT(iv, cipher_text):
     # secret key 
     key = b'Sixteen byte key'
 
-
+    
     # Decrypt
     cipher_text = base64.b64decode(cipher_text)
     iv = cipher_text[:AES.block_size]
@@ -152,8 +323,98 @@ def CBC_DECRYPT(iv, cipher_text):
 
 
 
-###################################################################################
 
+
+
+
+
+
+
+#####################################################################
+#
+# 		CTR  -  ENCRYPTION
+#
+#####################################################################
+
+
+def CTR(username, password):
+    index='ctr'
+
+    print "CTR selected: %s:%s" % (username,password)
+
+    nonce = Random.new().read(8)
+    
+
+    # Encrypt plaintext username and password
+    e_username = CTR_ENCRYPT(nonce, username)
+    e_password = CTR_ENCRYPT(nonce, password)
+    print "%s:%s" % (e_username,e_password)
+
+
+    # Verify if credentials already exists in file before writing
+    CTR_CHKDUP(index, e_username, e_password, username, password, nonce) 
+
+
+
+
+
+
+def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
+    print "check for duplicates entries."
+
+    # put file dbpass content into array "file" 
+    try:
+        if os.path.exists('./dbpass'):
+            file = []
+            for f_lines in open('./dbpass','r').readlines():
+                f_lines = f_lines.strip('\n')
+                file.append(f_lines)
+        else:
+    	    CTR_COMMIT(index, e_username, e_password, nonce) 
+    except:
+      pass
+
+
+
+    try:
+        for line in file:
+            index_line = line.split(':')[0]
+
+            if index_line == 'ctr' and index == 'ctr':
+                index_line, e_username, e_password, nonce = line.split(':')
+                f_username = CTR_DECRYPT(nonce, e_username)	# username decrypted from file
+                f_password = CTR_DECRYPT(nonce, e_password)	# username decrypted from file
+
+                if f_username:
+                    if f_username == username and f_password == password:
+                        print "credentials already exist in database."
+                        sys.exit(0)
+                    else:
+                        print "writing to db file - ctr : %s:%s " % (username, password) 
+                        CTR_COMMIT(index, e_username, e_password, nonce) 
+
+            elif index_line == ' ':
+                print "writing to db file + ctr : %s:%s " % (username, password) 
+    	        CTR_COMMIT(index, e_username, e_password, nonce) 
+                
+    except UnboundLocalError, e:
+        pass
+
+
+
+
+
+
+def CTR_COMMIT(index, e_username, e_password, nonce):
+
+    print "Wrote credentials to db file"
+  
+    
+    # open file for writing even if file does not exist
+    cred = open('dbpass', 'a')
+    cred.write(("%s:%s:%s:%s") % (index, e_username, e_password, nonce))
+    cred.write("\n")
+    cred.close()
 
 
 
@@ -185,81 +446,12 @@ def CTR_DECRYPT(nonce, cipher_text):
 
 
 
+
 ###################################################################################
 
 
 
 
-''' Main ECB function that starts up Encryption and Decryption mechanisms '''
-
-def ECB(username, password):
-    print "ECB selected: %s:%s" % (username,password)
-    username = PADDING(username)
-    password = PADDING(password)
-
-    # Encrypt plaintext username and password
-    e_username = ECB_ENCRYPT(username)
-    e_password = ECB_ENCRYPT(password)
-    print "%s:%s" % (e_username,e_password)
-
-    index='ecb'
-    DB(index, e_username, e_password) 
-
-
-    # Decrypt username and password
-    username = ECB_DECRYPT(e_username)
-    password = ECB_DECRYPT(e_password)
-    print "%s:%s" % (username,password)
-
-
-
-
-
-
-def CTR(username, password):
-    print "CTR selected: %s:%s" % (username,password)
-
-    nonce = Random.new().read(8)
-
-    # Encrypt plaintext username and password
-    e_username = CTR_ENCRYPT(nonce, username)
-    e_password = CTR_ENCRYPT(nonce, password)
-    print "%s:%s" % (e_username,e_password)
-
-
-    index='ctr'
-    DB(index, e_username, e_password)
-
-    # Decrypt username and password
-    username = CTR_DECRYPT(nonce, e_username)
-    password = CTR_DECRYPT(nonce, e_password)
-    print "%s:%s" % (username,password)
-
-
-
-
-
-
-def CBC(username, password):
-    print "CBC selected: %s:%s" % (username,password)
-    username = PADDING(username)
-    password = PADDING(password)
-
-    # Encrypt plaintext username and password
-    iv = os.urandom(16)
-    e_username = CBC_ENCRYPT(iv, username)
-    e_password = CBC_ENCRYPT(iv, password)
-    print "%s:%s" % (e_username,e_password)
-
-
-    index='cbc'
-    DB(index, e_username, e_password) 
-
-
-    # Decrypt username and password
-    username = CBC_DECRYPT(iv, e_username)
-    password = CBC_DECRYPT(iv, e_password)
-    print "%s:%s" % (username,password)
 
 
 
@@ -267,7 +459,12 @@ def CBC(username, password):
 
 
 
+def PADDING(msg):
+  return msg + (((16-len(msg) % 16)) * '\x00')
 
+
+def UNPAD(msg):
+  return msg.rstrip(b'\x00')
 
 
 
