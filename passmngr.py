@@ -92,8 +92,7 @@ def ECB_CHKDUP(index, e_username, e_password, username, password):
     	        f_username = UNPAD(ECB_DECRYPT(fe_username))	# username decrypted from file, then unpad
     	        f_password = UNPAD(ECB_DECRYPT(fe_password))	# password decrypted from file, then unpad
 
-                # flag=ym
-                #print "f_username: %s, f_password: %s, username: %s, password: %s" % (f_username, f_password, username, password)
+
 	
 	        # Check if username exists in a file, if it does then compare credentials from file with current input	
 	        if f_username == username and f_password == password:
@@ -266,7 +265,6 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
                 f_password = UNPAD(CBC_DECRYPT(iv, fe_password))	# password decrypted from file, then unpad
               
 		
-		#flag = ym2
 
                 if f_username == username and f_password == password:
                     print "credentials already exist in database."
@@ -419,29 +417,47 @@ def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
 
             index_line = line.split(':')[0]
 
+
             if index_line == 'ctr' and index == 'ctr':
-                index_line, e_username, e_password, nonce = line.split(':')
-                f_username = CTR_DECRYPT(nonce, e_username)	# username decrypted from file
-                f_password = CTR_DECRYPT(nonce, e_password)	# username decrypted from file
 
-                if f_username:
-                    if f_username == username and f_password == password:
-                        print "credentials already exist in database."
-                        sys.exit(0)
-                    else:
-                        print "writing to db file - ctr : %s:%s " % (username, password) 
-                        CTR_COMMIT(index, e_username, e_password, nonce) 
+                index_line, fe_username, fe_password, fe_nonce = line.split(':')
 
-            elif index_line == ' ':
+                f_username = CTR_DECRYPT(fe_nonce, fe_username)	# username decrypted from file
+                f_password = CTR_DECRYPT(fe_nonce, fe_password)	# username decrypted from file
+
+
+		#flag =ym3
+                #print "f_username: %s, f_password: %s, username: %s, password: %s" % (f_username, f_password, username, password)
+
+                if f_username == username and f_password == password:
+                    print "credentials already exist in database."
+                    sys.exit(0)
+
+                elif f_username != username and f_password != password and counter == 0:
+                    print "writing to db file - ctr : %s:%s " % (username, password) 
+                    CTR_COMMIT(index, e_username, e_password, nonce) 
+
+		elif f_username != username and f_password == password and counter == 0:
+                    print "writing to db file - ctr : %s:%s " % (username, password) 
+                    CTR_COMMIT(index, e_username, e_password, nonce) 
+
+		elif f_username == username and f_password != password and counter == 0:
+                    print "writing to db file - ctr : %s:%s " % (username, password) 
+                    CTR_COMMIT(index, e_username, e_password, nonce) 
+
+
+            if index_line is None and counter == 0:
                 print "writing to db file + ctr : %s:%s " % (username, password) 
     	        CTR_COMMIT(index, e_username, e_password, nonce) 
 
-            elif counter == 0:
+
+            if index_line != index and counter == 0:
                 print "writing to db file + ctr : %s:%s " % (username, password) 
     	        CTR_COMMIT(index, e_username, e_password, nonce) 
-                
+            
+    
     except UnboundLocalError, e:
-        pass
+        raise
 
 
 
