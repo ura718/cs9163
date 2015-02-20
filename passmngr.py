@@ -260,31 +260,41 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
 
 
             if index_line == 'cbc' and index == 'cbc':
-                index_line, e_username, e_password, iv = line.split(':')
+                index_line, fe_username, fe_password, iv = line.split(':')
 
-                f_username = UNPAD(CBC_DECRYPT(iv, e_username))	# username decrypted from file, then unpad
-                f_password = UNPAD(CBC_DECRYPT(iv, e_password))	# password decrypted from file, then unpad
+                f_username = UNPAD(CBC_DECRYPT(iv, fe_username))	# username decrypted from file, then unpad
+                f_password = UNPAD(CBC_DECRYPT(iv, fe_password))	# password decrypted from file, then unpad
               
+		
+		#flag = ym2
+
+                if f_username == username and f_password == password:
+                    print "credentials already exist in database."
+                    sys.exit(0)
+
+                elif f_username != username and f_password != password and counter == 0:
+                    print "writing to db file - cbc : %s:%s " % (username, password) 
+    	            CBC_COMMIT(index, e_username, e_password, iv) 
+
+		elif f_username != username and f_password == password and counter == 0:
+                    print "writing to db file - cbc : %s:%s " % (username, password) 
+    	            CBC_COMMIT(index, e_username, e_password, iv) 
+
+		elif f_username == username and f_password != password and counter == 0:
+                    print "writing to db file - cbc : %s:%s " % (username, password) 
+    	            CBC_COMMIT(index, e_username, e_password, iv) 
 
 
-                if f_username:
-                    if f_username == username and f_password == password:
-                        print "credentials already exist in database."
-                        sys.exit(0)
-                    else:
-                        print "writing to db file - cbc : %s:%s " % (username, password) 
-    	                CBC_COMMIT(index, e_username, e_password, iv) 
-
-            elif index_line == ' ':
+            if index_line is None and counter == 0:
                 print "writing to db file + cbc : %s:%s " % (username, password) 
     	        CBC_COMMIT(index, e_username, e_password, iv) 
 
-            elif counter == 0:
+            if index_line != index and counter == 0:
                 print "writing to db file + cbc : %s:%s " % (username, password) 
     	        CBC_COMMIT(index, e_username, e_password, iv) 
                 
     except UnboundLocalError, e:
-        pass
+        raise
 
 
 
