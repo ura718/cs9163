@@ -4,7 +4,7 @@
 # Import class modules
 from ctr_class import *
 from cbc_class import *
-#from ecb_class import *
+from ecb_class import *
 
 
 
@@ -111,7 +111,25 @@ if args.e:
 
 
     # ECB
-    # if args.ecb:
+    if args.ecb:
+        ecb = ECB()
+
+        # check if db file exists
+        ecb.chkdb()
+
+
+        plaintext = args.u
+        ecb.chkdup(plaintext)   # verify if duplicate username exists
+        e_username = ecb.encrypt(plaintext)
+
+        plaintext = args.p
+        e_password = ecb.encrypt(plaintext)
+
+        fo = open('ecb_db', 'a')
+        fo.write(('%s:%s') % (e_username, e_password))
+        fo.write('\n')
+        fo.close()
+
 
 
 
@@ -179,4 +197,28 @@ if args.d:
 
 
     # ECB
-    # if args.ecb
+    if args.ecb:
+        # Instantiate ctr from CTR() class: "ctr_class"
+        ecb = ECB()
+
+        plaintext = args.u
+        file = []
+        dict={}
+
+        for f_lines in open('./ecb_db', 'r').readlines():
+            f_lines = f_lines.strip('\n')
+            file.append(f_lines)        
+
+        for line in file:
+            e_username, e_password = line.split(':')
+            username = ecb.decrypt(e_username)
+            password = ecb.decrypt(e_password)
+            dict[username] = password
+
+
+        if dict.has_key(plaintext) == True:
+            print dict[plaintext]
+        else:
+            print "no user found"
+
+
