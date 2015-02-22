@@ -125,7 +125,7 @@ def ECB_CHKDUP(index, e_username, e_password, username, password):
 
                 
     except UnboundLocalError, e:
-        raise
+        pass
 
 
 
@@ -292,7 +292,7 @@ def CBC_CHKDUP(index, e_username, e_password, username, password, iv):
     	        CBC_COMMIT(index, e_username, e_password, iv) 
                 
     except UnboundLocalError, e:
-        raise
+        pass
 
 
 
@@ -420,14 +420,14 @@ def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
 
             if index_line == 'ctr' and index == 'ctr':
 
-                index_line, fe_username, fe_password, fe_nonce = line.split(':')
+                index_line, fe_username, fe_password, nonce = line.split(':')
 
-                f_username = CTR_DECRYPT(fe_nonce, fe_username)	# username decrypted from file
-                f_password = CTR_DECRYPT(fe_nonce, fe_password)	# username decrypted from file
+                f_username = CTR_DECRYPT(nonce, fe_username)	# username decrypted from file
+                f_password = CTR_DECRYPT(nonce, fe_password)	# username decrypted from file
 
 
-		#flag =ym3
-                #print "f_username: %s, f_password: %s, username: %s, password: %s" % (f_username, f_password, username, password)
+		#ym
+                print "f_username: %s, f_password: %s, username: %s, password: %s" % (f_username, f_password, username, password)
 
                 if f_username == username and f_password == password:
                     print "credentials already exist in database."
@@ -457,7 +457,7 @@ def CTR_CHKDUP(index, e_username, e_password, username, password, nonce):
             
     
     except UnboundLocalError, e:
-        raise
+        pass
 
 
 
@@ -486,6 +486,7 @@ def CTR_ENCRYPT(nonce, plaintext):
     # Create encryptor, ask for plaintext to encrypt, then encrypt and print ciphertext
     encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
     cipher_text = base64.b64encode(encrypt_mode.encrypt(plaintext))
+    print '[-] %s' % cipher_text
     return cipher_text
 
 
@@ -500,6 +501,7 @@ def CTR_DECRYPT(nonce, cipher_text):
     # Create decryptor, then decrypt and print plain text
     encrypt_mode = AES.new(key, AES.MODE_CTR, counter=Counter.new(64, prefix=nonce))
     plain_text = encrypt_mode.decrypt(base64.b64decode(cipher_text))
+    print '[+] %s' % plain_text
     return plain_text
 
 
