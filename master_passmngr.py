@@ -1,7 +1,20 @@
 #!/usr/bin/python
 
 
+#
+# Author: Yuri Medvinsky
+# class: cs9163 Application Security
+# Info: This code imports ctr_class.py, cbc_class.py and ecb_class.py
+#       to provide three different types of encryptions and decryptions.
+#       It creates three different database files for storage of encrypted
+#       usernames and passwords. Each database file is associated with the
+#       chosen encryption. (e.g: -cbc ==> cbc_db)
+#
+
+
+
 # Import class modules
+import argparse
 from ctr_class import *
 from cbc_class import *
 from ecb_class import *
@@ -54,7 +67,7 @@ if flag == False:
 
 
 
-# encrypt
+# Encrypt
 if args.e:
     if args.u == None:
         print "[-] username required "
@@ -63,6 +76,7 @@ if args.e:
     if args.p == None:
         print "[-] password required "
         sys.exit(0)
+
 
 
     # CTR
@@ -88,6 +102,7 @@ if args.e:
 
 
 
+
     # CBC
     if args.cbc:
         cbc = CBC()
@@ -107,6 +122,7 @@ if args.e:
         fo.write(('%s:%s:%s') % (e_username, e_password, cbc.iv))
         fo.write('\n')
         fo.close()
+
 
 
 
@@ -135,7 +151,10 @@ if args.e:
 
 
 
-# decrypt
+
+
+
+# Decrypt
 if args.d:
 
     # CTR 
@@ -194,6 +213,8 @@ if args.d:
             print dict[plaintext]
         else:
             print "no user found"
+
+
 
 
     # ECB
