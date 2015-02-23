@@ -1,6 +1,15 @@
 #!/usr/bin/python
 
 
+#
+# Author: Yuri Medvinsky
+# class: cs9163 Application Security
+# Info: This code is a ECB class used by  
+#       password manager to import
+#       
+
+
+
 
 # Import modules
 from Crypto.Cipher import AES
@@ -14,9 +23,8 @@ import os
 class ECB:
     def __init__(self):
 
-        # Pick randome 64-bit nonce
-        self.key = b'Sixteen byte key'
-
+        # 32-bit private key
+        self.key = b'For my eyes only my private msg!'
 
 
     def encrypt(self, plaintext):
