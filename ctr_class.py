@@ -2,6 +2,14 @@
 
 
 
+#
+# Author: Yuri Medvinsky
+# class: cs9163 Application Security
+# Info: This code is a CTR class used by  
+#       password manager to import
+#       
+
+
 
 
 # Import modules
@@ -19,7 +27,8 @@ class CTR:
 
         # Pick randome 64-bit nonce
         self.nonce = Random.new().read(8)
-        self.key = b'Sixteen byte key'
+        # 32-bit private key
+        self.key = b'For my eyes only my private msg!'
 
 
     def encrypt(self, plaintext):
