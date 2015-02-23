@@ -1,6 +1,14 @@
 #!/usr/bin/python
 
 
+#
+# Author: Yuri Medvinsky
+# class: cs9163 Application Security
+# Info: This code is a CBC class used by  
+#       password manager to import
+#     
+
+
 
 # Import modules
 from Crypto.Cipher import AES
@@ -15,7 +23,8 @@ import os
 class CBC:
     def __init__(self):
 
-        self.key = b'Sixteen byte key'
+        # 32-bit private key
+        self.key = b'For my eyes only my private msg!'
         self.block_size = 16
         self.iv = os.urandom(16)
 
