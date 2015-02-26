@@ -16,6 +16,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Util import Counter
+import binascii
 import base64
 import sys
 import os
@@ -27,8 +28,8 @@ class CTR:
 
         # Pick randome 64-bit nonce
         self.nonce = Random.new().read(8)
-        # 32-bit private key
-        self.key = b'For my eyes only my private msg!'
+        # private key
+        self.key = binascii.unhexlify('c6e60b68ce37e90e5ea08930b381af38')
 
 
     def encrypt(self, plaintext):
