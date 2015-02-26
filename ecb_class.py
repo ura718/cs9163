@@ -24,7 +24,7 @@ class ECB:
     def __init__(self):
 
         # 32-bit private key
-        self.key = b'For my eyes only my private msg!'
+        self.key = binascii.unhexlify('c6e60b68ce37e90e5ea08930b381af38')
 
 
     def encrypt(self, plaintext):
