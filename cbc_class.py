@@ -14,6 +14,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Util import Counter
+import binascii
 import base64
 import sys
 import os
@@ -24,7 +25,7 @@ class CBC:
     def __init__(self):
 
         # 32-bit private key
-        self.key = b'For my eyes only my private msg!'
+        self.key = binascii.unhexlify('c6e60b68ce37e90e5ea08930b381af38')
         self.block_size = 16
         self.iv = os.urandom(16)
 
